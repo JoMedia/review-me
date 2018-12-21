@@ -1,23 +1,27 @@
-var reviews = require('./reviews');
+'use strict'
 
-module.exports.start = function start(config) {
-    for (var i = 0; i < config.apps.length; i++) {
-        var app = config.apps[i];
+const container = require('./bootstrap/bootstrap')
+const Worker = require('./worker')
 
-        reviews.start({
-            slackHook: config.slackHook,
-            verbose: config.verbose,
-            dryRun: config.dryRun,
-            interval: config.interval,
-            botUsername: app.botUsername || config.botUsername,
-            botIcon: app.botIcon || config.botIcon,
-            botEmoji: app.botEmoji || config.botEmoji,
-            showAppIcon: app.showAppIcon || config.showAppIcon,
-            channel: app.channel || config.channel,
-            publisherKey: app.publisherKey,
-            appId: app.appId,
-            appName: app.appName,
-            regions: app.regions
-        })
+const config = container.make('config')
+
+const apps = Object.keys(config.apps)
+  .filter(appName => {
+    return config.apps[appName].active
+  })
+  .map(appName => {
+    try {
+      return container.make(`apps.${appName}`)
+    } catch (e) {
+      container.make('logger').warn(`The app "${appName}" is not valid.`)
+      return null
     }
-};
+  })
+  .filter(app => {
+    return app !== null
+  })
+
+const worker = new Worker(apps, container)
+
+worker.start()
+

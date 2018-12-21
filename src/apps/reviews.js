@@ -1,5 +1,5 @@
 const request = require('request');
-const appstore = require('./appstorereviews.js');
+const appStore = require('./appstorereviews.js');
 const googlePlay = require('./googleplayreviews.js');
 const fs = require('fs');
 
@@ -8,7 +8,7 @@ const REVIEWS_STORES = {
     "GOOGLE_PLAY": "google-play"
 };
 
-var published_reviews;
+let published_reviews;
 try {
     published_reviews = JSON.parse(fs.readFileSync('./published_reviews.json'));
 } catch (err) {
@@ -23,7 +23,7 @@ try {
         }
 
         if (config.store === REVIEWS_STORES.APP_STORE) {
-            appstore.startReview(config, !published_reviews[config.appId]);
+            appStore.startReview(config, !published_reviews[config.appId]);
         } else {
             googlePlay.startReview(config, !published_reviews[config.appId])
         }
@@ -69,8 +69,8 @@ exports.resetPublishedReviews = function () {
 };
 
 exports.welcomeMessage = function (config, appInformation) {
-    var storeName = appStoreName(config);
-    var appName = config.appName ? config.appName : (appInformation.appName ? appInformation.appName : config.appId);
+    let storeName = appStoreName(config);
+    let appName = config.appName ? config.appName : (appInformation.appName ? appInformation.appName : config.appId);
     return {
         "username": config.botUsername,
         "icon_url": config.botIcon,
@@ -88,7 +88,7 @@ exports.welcomeMessage = function (config, appInformation) {
 };
 
 exports.postToSlack = function (message, config) {
-    var messageJSON = JSON.stringify(message);
+    let messageJSON = JSON.stringify(message);
     if (config.verbose) {
         console.log("INFO: Posting new message to Slack: ");
         console.log("INFO: Hook: " + config.slackHook);
@@ -104,6 +104,6 @@ exports.postToSlack = function (message, config) {
 };
 
 
-var appStoreName = function (config) {
+let appStoreName = function (config) {
     return config.store === REVIEWS_STORES.APP_STORE ? "App Store" : "Google Play";
 };
