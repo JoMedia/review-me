@@ -5,7 +5,7 @@ const moment = require('moment')
 
 let startApp = function (app) {
   const interval = this.container.make('config').interval
-  const ignoreFirstRun = this.container.make('config').publishFirstRun
+  const ignoreFirstRun = !this.container.make('config').publishFirstRun
 
   return new Promise((resolve, reject) => {
     executeAppTask.call(this, app, ignoreFirstRun)
