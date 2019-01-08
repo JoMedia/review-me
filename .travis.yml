@@ -1,0 +1,39 @@
+# Defines the language and version of the language to be used
+language: node_js
+
+sudo: required
+
+node_js:
+  - "9.6.1"
+
+cache:
+  ccache: true
+  directories:
+    - ${HOME}/dependencies
+
+before_deploy:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - export REPO=infrasystems/$(echo $TRAVIS_REPO_SLUG |cut -d "/" -f2)
+  - docker build -f Dockerfile -t $REPO:$TRAVIS_TAG .
+  - docker push $REPO
+  - tar -czvf build.tar.gz *
+  - rm -rf `ls | grep -v build.tar.gz`
+
+
+# Defines where the build should be uploaded
+deploy:
+  provider: releases
+  api_key:
+    secure: JfFnweTLlMYDE9XGO3uxgDODhV0JjmRc0oE9MnTB1of6aSZnXg9aS0gZRPBOAf9iMsPE69sTT2z+4nSVsrZn0zg+X095uuG0sp9DXEF6gXtsQhxLJKgOpjoJZFbfZOYQYEJzev284WjPQv10r9vVu+j713mkpp/ngKAG3qQ7HwDfsBfKMlBkdCXxT2DduKflbmT8fj9DSJ7H/8GEb6tDvIfI21ABK3Ll3wJjEHt6OTEKaupgLwUOW21EYmxfPE/bmNmrwnw2zIJAASJXzd18F8htx91QWP0/b26EjCMqNyOnKRCV+OjNwGtjdZzpX2fIxJl124llzILtS7BA2oN6wGD5nTqDsZdK5rl1/w80ZO4/O0SyQ6QqrWRW4IGtjjlQE9gkmyx/OynahZM9OHdCok5eJ321u0S4Kak+7IoegYDfPVlVSQYq5fDqaL+JCRCgFSYYYLSDBUpNdEu3FvIz1lQiZRNnJzVnuVuzSccixkn1VRjsKCl6SPjDby2ZSxiwmL/JjGgwRTDmXTqK9V0FLp2BEw6Kq1dZrVY1rhZlKnuNWa1saQwjJWHXzaSD04Ft2GCDx5qCMylapHNkhx3n8RyiUIp2vjO6ANzquPP4C4NcseARWgSi/nuuzmfxOTk1GBz2ykcjXQ3ghws6i5NzriQ+dcuAtSHUGuR2HsyHWE8=
+  file: build.tar.gz
+  skip_cleanup: true
+  overwrite: true
+  on:
+    tags: true
+    repo: JoMedia/review-me
+
+before_script:
+  - npm install --production
+
+script: echo 'no tests'
+
