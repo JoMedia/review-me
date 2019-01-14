@@ -12,7 +12,8 @@ let parsePlayStoreReview = function (review) {
     author: review.authorName,
     appName: 'Playster Android',
     storeName: 'Google Play Store',
-    region: null
+    region: null,
+    lastModified: comment.lastModified.seconds
   }
 }
 

@@ -64,16 +64,24 @@ let filterUnpublishedReviews = function (app, reviews, database) {
 
       bindings.push(app.shortName())
 
-      const sql = `select review_id from app_reviews where review_id in (${values}) and app = ?`
+      const sql = `SELECT review_id, UNIX_TIMESTAMP(created_at) as created_at FROM app_reviews WHERE review_id IN (${values}) AND app = ?`
 
       database.query(sql, bindings)
         .then(results => {
-          const alreadyPublishedIds = results.map(record => {
-            return record['review_id']
+          let alreadyPublished = {}
+
+          results.forEach(record => {
+            alreadyPublished[record['review_id']] = record['created_at']
           })
 
           const newReviews = reviews.filter(review => {
-            return alreadyPublishedIds.indexOf(review.id) === -1
+            if (typeof alreadyPublished[review.id] === 'undefined') {
+              return true
+            }
+            if (typeof review.lastModified !== 'undefined') {
+              return review.lastModified - parseInt(alreadyPublished[review.id]) >= 7200
+            }
+            return false
           })
 
           resolve(newReviews)
@@ -118,16 +126,24 @@ let markReviewsAsPublished = function (app, reviews, database) {
     if (reviews.length === 0) {
       return resolve(reviews.length)
     }
-    const createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
+    const defaultCreatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
 
     let bindings = []
     const values = reviews
       .map(review => {
+        let createdAt = defaultCreatedAt
+        if (typeof review.lastModified !== 'undefined') {
+          createdAt = moment.unix(review.lastModified).format('YYYY-MM-DD HH:mm:ss')
+        }
         bindings.push(review.id, app.shortName(), review.version, review.title, review.text, review.rating, review.author, createdAt)
         return `(?, ?, ?, ?, ?, ?, ?, ?)`
       })
       .join(',')
-    const sql = `INSERT IGNORE INTO app_reviews (review_id, app, version, title, content, rating, author, created_at) VALUES ${values}`
+    const sql = `
+      INSERT INTO app_reviews (review_id, app, version, title, content, rating, author, created_at) 
+      VALUES ${values} 
+      ON DUPLICATE KEY UPDATE version = VALUES(version), title = VALUES(title), content = VALUES(content), rating = VALUES(rating), created_at = VALUES(created_at)`
+
     database.query(sql, bindings)
       .then(() => resolve(reviews.length))
       .catch(err => reject(err))
