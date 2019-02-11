@@ -42,7 +42,7 @@ let fetchRegionReview = function (request, appId, region, limit, logger) {
 
       let entries = rss.feed.entry
 
-      if (entries === null || !entries.length > 0) {
+      if (entries === null || typeof entries === 'undefined' || entries.length === 0) {
         logger.info(`No reviews received from Apple Store (${region})`);
         return resolve([])
       }

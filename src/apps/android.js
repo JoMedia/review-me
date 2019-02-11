@@ -38,7 +38,7 @@ let fetchReviews = function (jwt, googleReviews, appId, limit, logger) {
       if (err) {
         return reject(err)
       }
-      if (!response.reviews) {
+      if (!response.reviews || response.reviews.length === 0) {
         logger.info(`No reviews received from Play Store`);
         return resolve([])
       }
