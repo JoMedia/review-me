@@ -9,7 +9,10 @@ let startApp = function (app) {
 
   return new Promise((resolve, reject) => {
     executeAppTask.call(this, app, ignoreFirstRun)
-      .then(() => resolve())
+      .then(() => {
+        this.container.make('freak').notify(app.shortName(), interval * 1.5)
+        resolve()
+      })
       .then(err => reject(err))
 
     setInterval(() => {
@@ -17,6 +20,7 @@ let startApp = function (app) {
       executeAppTask.call(this, app, ignoreFirstRun)
         .then(totalReviewsProcessed => {
           this.container.make('logger').info(`Processed ${totalReviewsProcessed} reviews from ${app.shortName()}.`)
+          this.container.make('freak').notify(app.shortName(), interval * 1.5)
         })
         .catch(err => {
           this.container.make('logger').error(`Error processing reviews from ${app.shortName()}:`)

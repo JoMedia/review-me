@@ -3,7 +3,7 @@
 let config = {}
 
 config.providers = [
-  'apps', 'database', 'logger', 'slack'
+  'apps', 'database', 'logger', 'slack', 'freak'
 ]
 
 config.logger = [
@@ -51,6 +51,14 @@ config.mysql = {
   password: 'secret',
   database: 'jomedia',
   charset: 'utf8_general_ci'
+}
+
+config.freak = {
+  active: false,
+  host: 'freak.playster.systems',
+  port: 443,
+  email: '',
+  env: 'dev'
 }
 
 module.exports = config

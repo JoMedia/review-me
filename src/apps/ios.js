@@ -12,10 +12,10 @@ let parseAppStoreReview = function (entry, region) {
   return {
     id: entry.id.label,
     version: entry['im:version'].label,
-    title: entry.title.label,
-    text: entry.content.label,
+    title: entry.title.label.replace(/[\u0800-\uFFFF]/g, ''),
+    text: entry.content.label.replace(/[\u0800-\uFFFF]/g, ''),
     rating: entry['im:rating'].label,
-    author: entry.author ? entry.author.name.label : '',
+    author: entry.author ? entry.author.name.label.replace(/[\u0800-\uFFFF]/g, '') : '',
     appName: 'Playster IOS',
     storeName: 'Apple Store',
     region: region
